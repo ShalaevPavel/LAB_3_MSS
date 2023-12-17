@@ -2,12 +2,18 @@ package org.example;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.text.DateFormat;
+import java.text.NumberFormat;
+import java.util.Currency;
+import java.util.Date;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 public class FunctionApp {
 
     private JFrame frame;
+    private JLabel dateLabel;
+    private JLabel currencyLabel;
     private JComboBox<String> functionComboBox;
     private JTextField argumentsField;
     private JLabel resultLabel;
@@ -42,7 +48,6 @@ public class FunctionApp {
     }
 
     private void updateLanguage() {
-        // Загрузка ресурсов для новой локали
         messages = ResourceBundle.getBundle("messages", currentLocale);
 
         // Обновление текстов интерфейса
@@ -50,14 +55,23 @@ public class FunctionApp {
         executeButton.setText(messages.getString("execute"));
         resultLabel.setText(messages.getString("result"));
         languageButton.setText(messages.getString("change_language"));
+        dateLabel.setText(messages.getString("date"));
+        currencyLabel.setText(messages.getString("currency"));
 
-        // Обновите здесь любые другие текстовые компоненты, которые требуют локализации
     }
     private void initializeUI() {
+        dateLabel = new JLabel();
+        currencyLabel = new JLabel();
+
+
+
+        updateDateAndCurrency();
         frame = new JFrame(messages.getString("title"));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(400, 200);
         frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
+        frame.add(dateLabel);
+        frame.add(currencyLabel);
 
         functionComboBox = new JComboBox<>(new String[]{"function1", "function2"});
         argumentsField = new JTextField();
@@ -80,12 +94,9 @@ public class FunctionApp {
         String argument = argumentsField.getText();
         try {
             Object result;
-            // Проверяем, пустая ли строка
             if (argument.isEmpty()) {
-                // Вызываем функцию без аргументов
                 result = functionLoader.invokeFunction(functionName);
             } else {
-                // Пытаемся преобразовать строку в double и вызвать функцию с этим аргументом
                 result = functionLoader.invokeFunction(functionName, Double.parseDouble(argument));
             }
             resultLabel.setText(messages.getString("result") + ": " + result);
@@ -94,6 +105,23 @@ public class FunctionApp {
         } catch (Exception ex) {
             resultLabel.setText(messages.getString("error") + ": " + ex.getMessage());
             ex.printStackTrace();
+        }
+    }
+    private void updateDateAndCurrency() {
+        // Форматирование и отображение текущей даты
+        DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.LONG, currentLocale);
+        String currentDate = dateFormat.format(new Date());
+        dateLabel.setText(currentDate);
+
+        try {
+            // Форматирование и отображение примера валюты
+            NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(currentLocale);
+            currencyFormat.setCurrency(Currency.getInstance(currentLocale));
+            String exampleCurrency = currencyFormat.format(1234.56);
+            currencyLabel.setText(exampleCurrency);
+        } catch (IllegalArgumentException e) {
+            // В случае отсутствия поддержки валюты, установите текст по умолчанию
+            currencyLabel.setText("Currency not available for " + currentLocale.toString());
         }
     }
 

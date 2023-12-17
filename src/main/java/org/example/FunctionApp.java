@@ -45,8 +45,15 @@ public class FunctionApp {
         String functionName = (String) functionComboBox.getSelectedItem();
         String argument = argumentsField.getText();
         try {
-            Object result = functionLoader.invokeFunction(functionName, Double.parseDouble(argument));
+            Object result;
+            if (argument.isEmpty() && !functionName.equals("function1")) { // Предполагаем, что function1 не требует аргументов
+                result = functionLoader.invokeFunction(functionName);
+            } else {
+                result = functionLoader.invokeFunction(functionName, Double.parseDouble(argument));
+            }
             resultLabel.setText(messages.getString("result") + ": " + result);
+        } catch (NumberFormatException ex) {
+            resultLabel.setText(messages.getString("error") + ": Invalid number format");
         } catch (Exception ex) {
             resultLabel.setText(messages.getString("error") + ": " + ex.getMessage());
             ex.printStackTrace();
